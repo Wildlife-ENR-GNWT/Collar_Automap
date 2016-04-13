@@ -34,10 +34,10 @@ end_date = datetime.datetime.strptime(end_date, "%m/%d/%Y")
 # Set parameters
 ID_field = "AnimalNum"
 date_field = "txtDate"
-base_mxd = r"H:\Angus Smith\Caribou\Barren Ground Caribou\Judy_map_tool_04_2016\data\test_loc\BA_mapping_2015_TEMPLATE.mxd"
+base_mxd = r"H:\JUDY\github\Wildlife-ENR-GNWT\Collar_Automap\BA_mapping_2015.mxd"
 arcpy.env.overwriteOutput = True
-firstSYM = r"H:\Angus Smith\GIS_projects\boreal_caribou\BWC_FMA_home_range\data\DT_test_1\LYR_first.lyr"
-lastSYM = r"H:\Angus Smith\GIS_projects\boreal_caribou\BWC_FMA_home_range\data\DT_test_1\LYR_last.lyr"
+firstSYM = r"H:\JUDY\github\Wildlife-ENR-GNWT\Collar_Automap\LYR_first.lyr"
+lastSYM = r"H:\JUDY\github\Wildlife-ENR-GNWT\Collar_Automap\LYR_last.lyr"
 arcpy.env.workspace = output_location
 sort_field_for_lines = "ZuluTime"
 pdf_name = "Test_export_pdf"
