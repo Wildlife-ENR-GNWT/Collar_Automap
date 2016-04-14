@@ -148,7 +148,7 @@ arcpy.mapping.ExportToPDF(mxd, os.path.join(output_location, pdf_name))
 # Clean up working files
 if debug_script:
     # Save a copy of the mxd and don't delete the intermediate files.
-    mxd.saveACopy(r"H:\Angus Smith\Caribou\Barren Ground Caribou\Judy_map_tool_04_2016\data\test_loc\test_out\test_out_map.mxd")
+    mxd.saveACopy(os.path.join(output_location, "intermediate_mxd.mxd")
     del mxd
 else:
     arcpy.Delete_management("collar_data_date_subselection.shp")
