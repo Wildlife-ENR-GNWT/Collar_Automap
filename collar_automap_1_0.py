@@ -23,7 +23,8 @@ collar_data = arcpy.GetParameterAsText(1)
 # Optional User parameters
 start_date = arcpy.GetParameterAsText(2) # Enter it as mm/dd/yyyy with zero padded #s. SET DEFAULT as "none".
 end_date = arcpy.GetParameterAsText(3) # Enter it as mm/dd/yyyy with zero padded #s. SET DEFAULT as "none".
-use_auto_extent = arcpy.GetParameterAsText(4) # if "No" then uses the base_mxd's extent for the map. SET DEFAULT AS "Yes".
+use_auto_extent = arcpy.GetParameterAsText(4) # if False then uses the base_mxd's extent for the map (custom). SET DEFAULT AS True.
+debug_script = arcpy.GetParameterAsText(5) # Set this to True if you want to keep the intermediate files for debugging. SET DEFAULT AS False.
 
 # Derived user parameters
 start_date_name = "First point after " + start_date
@@ -41,7 +42,6 @@ lastSYM = r"H:\JUDY\github\Wildlife-ENR-GNWT\Collar_Automap\LYR_last.lyr"
 arcpy.env.workspace = output_location
 sort_field_for_lines = "ZuluTime"
 pdf_name = "Test_export_pdf"
-debug_script = False # Set this to True if you want to keep the intermediate files for debugging.
 
 # Subset original data based on date
 if start_date != "none":
@@ -137,7 +137,7 @@ legend.updateItem(first, styleItem)
 legend.updateItem(last, styleItem)
 
 # Set the map extent
-if use_auto_extent == "Yes":
+if use_auto_extent:
     extent_lyr = arcpy.mapping.ListLayers(mxd, "lines_collar_paths")[0]
     new_extent = extent_lyr.getExtent()
     df.extent = new_extent
@@ -146,11 +146,11 @@ if use_auto_extent == "Yes":
 arcpy.mapping.ExportToPDF(mxd, os.path.join(output_location, pdf_name))
 
 # Clean up working files
-if debug_script == True:
+if debug_script:
     # Save a copy of the mxd and don't delete the intermediate files.
     mxd.saveACopy(r"H:\Angus Smith\Caribou\Barren Ground Caribou\Judy_map_tool_04_2016\data\test_loc\test_out\test_out_map.mxd")
     del mxd
-elif debug_script == False:
+else:
     arcpy.Delete_management("collar_data_date_subselection.shp")
     arcpy.Delete_management("firstFC.shp")
     arcpy.Delete_management("lastFC.shp")
