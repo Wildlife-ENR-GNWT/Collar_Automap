@@ -58,6 +58,10 @@ if start_date != "none":
     collar_data = os.path.join(output_location, "collar_data_date_subselection") + ".shp"
     arcpy.Delete_management("tmp")
 
+# Subset the data based on region
+# Look up on the collar script that I made. I found the solution to this - I need
+# to implement that.
+
 # Make the lines
 arcpy.PointsToLine_management(collar_data, "lines_collar_paths", ID_field, sort_field_for_lines)
 
