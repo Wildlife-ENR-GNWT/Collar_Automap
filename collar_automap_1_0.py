@@ -23,10 +23,12 @@ collar_data = arcpy.GetParameterAsText(1)
 # Optional User parameters
 start_date = arcpy.GetParameterAsText(2) # Enter it as mm/dd/yyyy with zero padded #s. SET DEFAULT as "none".
 end_date = arcpy.GetParameterAsText(3) # Enter it as mm/dd/yyyy with zero padded #s. SET DEFAULT as "none".
-use_auto_extent = arcpy.GetParameterAsText(4) # if False then uses the base_mxd's extent for the map (custom). SET DEFAULT AS True.
-debug_script = arcpy.GetParameterAsText(5) # Set this to True if you want to keep the intermediate files for debugging. SET DEFAULT AS False.
+region_filter = arcpy.GetParameterAsText(4) # Enter in a region or regions to filter the data to.
+use_auto_extent = arcpy.GetParameterAsText(5) # if False then uses the base_mxd's extent for the map (custom). SET DEFAULT AS True.
+debug_script = arcpy.GetParameterAsText(6) # Set this to True if you want to keep the intermediate files for debugging. SET DEFAULT AS False.
 
 # Derived user parameters
+pdf_name = "Collar_movement_" + start_date + "_to_" + end_date
 start_date_name = "First point after " + start_date
 end_date_name = "Last point before " + end_date
 start_date = datetime.datetime.strptime(start_date, "%m/%d/%Y")
@@ -41,7 +43,7 @@ firstSYM = r"H:\JUDY\github\Wildlife-ENR-GNWT\Collar_Automap\LYR_first.lyr"
 lastSYM = r"H:\JUDY\github\Wildlife-ENR-GNWT\Collar_Automap\LYR_last.lyr"
 arcpy.env.workspace = output_location
 sort_field_for_lines = "ZuluTime"
-pdf_name = "Test_export_pdf"
+region_field = "Program"
 
 # Subset original data based on date
 if start_date != "none":
@@ -59,8 +61,9 @@ if start_date != "none":
     arcpy.Delete_management("tmp")
 
 # Subset the data based on region
-# Look up on the collar script that I made. I found the solution to this - I need
-# to implement that.
+if len(region_filter) > 0:
+    arcpy.MakeFeatureLayer_management(collar_data, "tmp")
+    arcpy.SelectLayerByAttribute_management("tmp", "NEW_SELECTION", """ {0} IN {1} """.format(region_field, str(tuple(region_filter.replace(" ", "").split(",")))))
 
 # Make the lines
 arcpy.PointsToLine_management(collar_data, "lines_collar_paths", ID_field, sort_field_for_lines)
