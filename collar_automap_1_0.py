@@ -65,13 +65,17 @@ if start_date != "None":
 
 # Subset the data based on region ("program")
 if region_filter != "All":
+    SQL = """ {0} IN {1} """.format(region_field, str(str(region_filter.replace("'", "")).split(";")).replace("[", "(").replace("]", ")"))
+    arcpy.AddMessage(SQL)
     arcpy.MakeFeatureLayer_management(collar_data, "tmp")
-    arcpy.SelectLayerByAttribute_management("tmp", "NEW_SELECTION", """ {0} IN {1} """.format(region_field, str(tuple(region_filter.replace(" ", "").split(",")))))
+    arcpy.SelectLayerByAttribute_management("tmp", "NEW_SELECTION", SQL)
 
 # Subset the data based on herd ("group")
 if herd_filter != "All":
+    SQL = """ {0} IN {1} """.format(herd_field, str(str(herd_filter.replace("'", "")).split(";")).replace("[", "(").replace("]", ")"))
+    arcpy.AddMessage(SQL)
     arcpy.MakeFeatureLayer_management(collar_data, "tmp")
-    arcpy.SelectLayerByAttribute_management("tmp", "NEW_SELECTION", """ {0} IN {1} """.format(herd_field, str(tuple(herd_filter.replace(" ", "").split(",")))))
+    arcpy.SelectLayerByAttribute_management("tmp", "NEW_SELECTION", SQL)
 
 # Name the pdf output based on realized date range (if it was not user input).
 def unique_values(table, field):
