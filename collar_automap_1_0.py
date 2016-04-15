@@ -24,15 +24,17 @@ collar_data = arcpy.GetParameterAsText(1)
 start_date = arcpy.GetParameterAsText(2) # Enter it as mm/dd/yyyy with zero padded #s. SET DEFAULT as "none".
 end_date = arcpy.GetParameterAsText(3) # Enter it as mm/dd/yyyy with zero padded #s. SET DEFAULT as "none".
 region_filter = arcpy.GetParameterAsText(4) # Enter in a region or regions to filter the data to.
-use_auto_extent = arcpy.GetParameterAsText(5) # if False then uses the base_mxd's extent for the map (custom). SET DEFAULT AS True.
-debug_script = arcpy.GetParameterAsText(6) # Set this to True if you want to keep the intermediate files for debugging. SET DEFAULT AS False.
+herd_filter = arcpy.GetParameterAsText(5)
+use_auto_extent = arcpy.GetParameterAsText(6) # if False then uses the base_mxd's extent for the map (custom). SET DEFAULT AS True.
+debug_script = arcpy.GetParameterAsText(7) # Set this to True if you want to keep the intermediate files for debugging. SET DEFAULT AS False.
 
 # Derived user parameters
-pdf_name = "Collar_movement_" + start_date + "_to_" + end_date
-start_date_name = "First point after " + start_date
-end_date_name = "Last point before " + end_date
-start_date = datetime.datetime.strptime(start_date, "%m/%d/%Y")
-end_date = datetime.datetime.strptime(end_date, "%m/%d/%Y")
+if start_date != "None":
+    start_date_name = "First point after " + start_date
+    end_date_name = "Last point before " + end_date
+    pdf_name = "Collar_movement_" + start_date + "_to_" + end_date
+    start_date = datetime.datetime.strptime(start_date, "%m/%d/%Y")
+    end_date = datetime.datetime.strptime(end_date, "%m/%d/%Y")
 
 # Set parameters
 ID_field = "AnimalNum"
@@ -44,9 +46,10 @@ lastSYM = r"H:\JUDY\github\Wildlife-ENR-GNWT\Collar_Automap\LYR_last.lyr"
 arcpy.env.workspace = output_location
 sort_field_for_lines = "ZuluTime"
 region_field = "Program"
+herd_field = "Group"
 
 # Subset original data based on date
-if start_date != "none":
+if start_date != "None":
     arcpy.MakeFeatureLayer_management(collar_data, "tmp")
     date_list = []
     date_list_FID = []
@@ -60,21 +63,36 @@ if start_date != "none":
     collar_data = os.path.join(output_location, "collar_data_date_subselection") + ".shp"
     arcpy.Delete_management("tmp")
 
-# Subset the data based on region
-if len(region_filter) > 0:
+# Subset the data based on region ("program")
+if region_filter != "All":
     arcpy.MakeFeatureLayer_management(collar_data, "tmp")
     arcpy.SelectLayerByAttribute_management("tmp", "NEW_SELECTION", """ {0} IN {1} """.format(region_field, str(tuple(region_filter.replace(" ", "").split(",")))))
 
-# Make the lines
-arcpy.PointsToLine_management(collar_data, "lines_collar_paths", ID_field, sort_field_for_lines)
+# Subset the data based on herd ("group")
+if herd_filter != "All":
+    arcpy.MakeFeatureLayer_management(collar_data, "tmp")
+    arcpy.SelectLayerByAttribute_management("tmp", "NEW_SELECTION", """ {0} IN {1} """.format(herd_field, str(tuple(herd_filter.replace(" ", "").split(",")))))
 
-# Unique values of collar IDs
+# Name the pdf output based on realized date range (if it was not user input).
 def unique_values(table, field):
     data = arcpy.da.TableToNumPyArray(table, [field])
     unqs = numpy.unique(data[field])
     output = [str(x) for x in unqs]
     return output
 
+if start_date == "None":
+    date_list_all_1 = unique_values(collar_data, date_field)
+    date_list_all_2 = [datetime.datetime.strptime(x, "%Y/%m/%d %H:%M") for x in date_list_all_1]
+    start_date_name = date_list_all_1[date_list_all_2.index(min(date_list_all_2))].split(" ")[0].split("/")
+    start_date_name = start_date_name[1] + "/" + start_date_name[2] + "/" + start_date_name[0]
+    end_date_name = date_list_all_1[date_list_all_2.index(max(date_list_all_2))].split(" ")[0].split("/")
+    end_date_name = end_date_name[1] + "/" + end_date_name[2] + "/" + end_date_name[0]
+    pdf_name = "Collar_movement_" + start_date_name.replace("/", "-") + "_to_" + end_date_name.replace("/", "-")
+
+# Make the lines
+arcpy.PointsToLine_management(collar_data, "lines_collar_paths", ID_field, sort_field_for_lines)
+
+# Unique values of collar IDs
 ID_list = unique_values(collar_data, ID_field)
 
 # Create "first" and "last" shps.
@@ -153,9 +171,9 @@ if use_auto_extent:
 arcpy.mapping.ExportToPDF(mxd, os.path.join(output_location, pdf_name))
 
 # Clean up working files
-if debug_script:
+if debug_script == True:
     # Save a copy of the mxd and don't delete the intermediate files.
-    mxd.saveACopy(os.path.join(output_location, "intermediate_mxd.mxd")
+    mxd.saveACopy(os.path.join(output_location, "intermediate_mxd.mxd"))
     del mxd
 else:
     arcpy.Delete_management("collar_data_date_subselection.shp")
