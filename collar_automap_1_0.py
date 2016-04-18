@@ -25,8 +25,8 @@ start_date = arcpy.GetParameterAsText(2) # Enter it as mm/dd/yyyy with zero padd
 end_date = arcpy.GetParameterAsText(3) # Enter it as mm/dd/yyyy with zero padded #s. SET DEFAULT as "none".
 region_filter = arcpy.GetParameterAsText(4) # Enter in a region or regions to filter the data to.
 herd_filter = arcpy.GetParameterAsText(5)
-use_auto_extent = arcpy.GetParameterAsText(6) # if False then uses the base_mxd's extent for the map (custom). SET DEFAULT AS True.
-debug_script = arcpy.GetParameterAsText(7) # Set this to True if you want to keep the intermediate files for debugging. SET DEFAULT AS False.
+use_auto_extent = arcpy.GetParameterAsText(6) # if "No" then uses the base_mxd's extent for the map (custom). SET DEFAULT AS "Yes".
+debug_script = arcpy.GetParameterAsText(7) # Set this to "Yes" if you want to keep the intermediate files for debugging. SET DEFAULT AS "No".
 
 # Derived user parameters
 if start_date != "None":
@@ -166,7 +166,7 @@ legend.updateItem(first, styleItem)
 legend.updateItem(last, styleItem)
 
 # Set the map extent
-if use_auto_extent:
+if use_auto_extent == "Yes":
     extent_lyr = arcpy.mapping.ListLayers(mxd, "lines_collar_paths")[0]
     new_extent = extent_lyr.getExtent()
     df.extent = new_extent
@@ -175,7 +175,7 @@ if use_auto_extent:
 arcpy.mapping.ExportToPDF(mxd, os.path.join(output_location, pdf_name))
 
 # Clean up working files
-if debug_script == True:
+if debug_script == "Yes":
     # Save a copy of the mxd and don't delete the intermediate files.
     mxd.saveACopy(os.path.join(output_location, "intermediate_mxd.mxd"))
     del mxd
