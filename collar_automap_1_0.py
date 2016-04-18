@@ -32,7 +32,7 @@ debug_script = arcpy.GetParameterAsText(7) # Set this to "Yes" if you want to ke
 if start_date != "None":
     start_date_name = "First point after " + start_date
     end_date_name = "Last point before " + end_date
-    pdf_name = "Collar_movement_" + start_date + "_to_" + end_date
+    pdf_name = "Collar_movement_" + start_date.replace("/", "-") + "_to_" + end_date.replace("/", "-")
     start_date = datetime.datetime.strptime(start_date, "%m/%d/%Y")
     end_date = datetime.datetime.strptime(end_date, "%m/%d/%Y")
 
@@ -66,14 +66,14 @@ if start_date != "None":
 # Subset the data based on region ("program")
 if region_filter != "All":
     SQL = """ {0} IN {1} """.format(region_field, str(str(region_filter.replace("'", "")).split(";")).replace("[", "(").replace("]", ")"))
-    arcpy.AddMessage(SQL)
+##    arcpy.AddMessage(SQL)
     arcpy.MakeFeatureLayer_management(collar_data, "tmp")
     arcpy.SelectLayerByAttribute_management("tmp", "NEW_SELECTION", SQL)
 
 # Subset the data based on herd ("group")
 if herd_filter != "All":
     SQL = """ {0} IN {1} """.format(herd_field, str(str(herd_filter.replace("'", "")).split(";")).replace("[", "(").replace("]", ")"))
-    arcpy.AddMessage(SQL)
+##    arcpy.AddMessage(SQL)
     arcpy.MakeFeatureLayer_management(collar_data, "tmp")
     arcpy.SelectLayerByAttribute_management("tmp", "NEW_SELECTION", SQL)
 
