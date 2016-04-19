@@ -39,7 +39,7 @@ if start_date != "None":
 # Set parameters
 ID_field = "AnimalNum"
 date_field = "txtDate"
-base_mxd = r"H:\JUDY\github\Wildlife-ENR-GNWT\Collar_Automap\BA_mapping_2015.mxd"
+base_mxd = r"H:\JUDY\github\Wildlife-ENR-GNWT\Collar_Automap\BA_weekly_map_template_16.mxd"
 arcpy.env.overwriteOutput = True
 firstSYM = r"H:\JUDY\github\Wildlife-ENR-GNWT\Collar_Automap\LYR_first.lyr"
 lastSYM = r"H:\JUDY\github\Wildlife-ENR-GNWT\Collar_Automap\LYR_last.lyr"
