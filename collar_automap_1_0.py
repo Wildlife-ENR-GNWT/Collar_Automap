@@ -16,6 +16,13 @@ import numpy
 import datetime
 import os
 
+# Unique defs
+def unique_values(table, field):
+    data = arcpy.da.TableToNumPyArray(table, [field])
+    unqs = numpy.unique(data[field])
+    output = [str(x) for x in unqs]
+    return output
+
 # Manditory User parameters
 output_location = arcpy.GetParameterAsText(0)
 collar_data = arcpy.GetParameterAsText(1)
@@ -47,6 +54,7 @@ arcpy.env.workspace = output_location
 sort_field_for_lines = "ZuluTime"
 region_field = "Program"
 herd_field = "Group"
+sex_field = "Sex"
 
 # Subset original data based on date
 if start_date != "None":
@@ -66,24 +74,36 @@ if start_date != "None":
 # Subset the data based on region ("program")
 if region_filter != "All":
     SQL = """ {0} IN {1} """.format(region_field, str(str(region_filter.replace("'", "")).split(";")).replace("[", "(").replace("]", ")"))
-##    arcpy.AddMessage(SQL)
     arcpy.MakeFeatureLayer_management(collar_data, "tmp")
     arcpy.SelectLayerByAttribute_management("tmp", "NEW_SELECTION", SQL)
+    arcpy.CopyFeatures_management("tmp","region_filter_subselection")
+    arcpy.Delete_management("tmp")
+    collar_data = os.path.join(output_location, "region_filter_subselection") + ".shp"
 
 # Subset the data based on herd ("group")
 if herd_filter != "All":
     SQL = """ {0} IN {1} """.format(herd_field, str(str(herd_filter.replace("'", "")).split(";")).replace("[", "(").replace("]", ")"))
-##    arcpy.AddMessage(SQL)
     arcpy.MakeFeatureLayer_management(collar_data, "tmp")
     arcpy.SelectLayerByAttribute_management("tmp", "NEW_SELECTION", SQL)
+    arcpy.CopyFeatures_management("tmp", "herd_filter_subselection")
+    arcpy.Delete_management("tmp")
+    collar_data = os.path.join(output_location, "herd_filter_subselection") + ".shp"
+
+# Check the data for any un-sexed individuals, remove them and post a warning to
+# the tool output.
+sex_list = unique_values(collar_data, sex_field)
+sex_list_unq = [sex for sex in sex_list if sex != "F" and sex != "M"]
+if sex_list_unq > 0:
+    SQL = """ {0} IN ('F', 'M') """.format(sex_field)
+    arcpy.AddMessage("WARNING - CONTAINS INDIVIDUALS WITH UNASSIGNED SEX.")
+    arcpy.AddMessage("These individuals were removed from the map.")
+    arcpy.MakeFeatureLayer_management(collar_data, "tmp")
+    arcpy.SelectLayerByAttribute_management("tmp", "NEW_SELECTION", SQL)
+    arcpy.CopyFeatures_management("tmp", "sex_filter_subselection")
+    arcpy.Delete_management("tmp")
+    collar_data = os.path.join(output_location, "sex_filter_subselection") + ".shp"
 
 # Name the pdf output based on realized date range (if it was not user input).
-def unique_values(table, field):
-    data = arcpy.da.TableToNumPyArray(table, [field])
-    unqs = numpy.unique(data[field])
-    output = [str(x) for x in unqs]
-    return output
-
 if start_date == "None":
     date_list_all_1 = unique_values(collar_data, date_field)
     date_list_all_2 = [datetime.datetime.strptime(x, "%Y/%m/%d %H:%M") for x in date_list_all_1]
