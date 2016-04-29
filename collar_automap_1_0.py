@@ -204,4 +204,8 @@ else:
     arcpy.Delete_management("firstFC.shp")
     arcpy.Delete_management("lastFC.shp")
     arcpy.Delete_management("lines_collar_paths.shp")
+    arcpy.Delete_management("region_filter_subselection")
+    arcpy.Delete_management("herd_filter_subselection")
+    arcpy.Delete_management("sex_filter_subselection")
+
     del mxd
