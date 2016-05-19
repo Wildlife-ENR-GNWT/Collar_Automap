@@ -57,32 +57,18 @@ region_field = "Program"
 herd_field = "Group"
 sex_field = "Sex"
 
-### Subset original data based on date
-##if start_date != "None":
-####    #TESTING STUFF
-####    import csv
-##    arcpy.MakeFeatureLayer_management(collar_data, "tmp")
-##    date_list = []
-##    date_list_FID = []
-##    with arcpy.da.SearchCursor("tmp", ("FID", date_field)) as cursor:
-##        for row in cursor:
-##            date_list.append(datetime.datetime.strptime(row[1], "%Y/%m/%d %H:%M"))
-##            date_list_FID.append(row[0])
-##    good_dates_FIDs = [date_list_FID[date_list.index(x)] for x in date_list if x > start_date and x < end_date]
-####    with open(r"H:\Angus Smith\Projects\BGC\Automap_debugging\analyzed_data\rerun_herd_filter_on\output7\output1.csv", "w") as f:
-####        writer = csv.writer(f)
-####        rows = zip(date_list, date_list_FID, good_dates_FIDs)
-####        for row in rows:
-####            writer.writerow(row)
-####    arcpy.AddMessage("good_dates_FIDs follow:")
-####    good_dates_FIDs.sort()
-####    arcpy.AddMessage(good_dates_FIDs)
-##    arcpy.SelectLayerByAttribute_management("tmp", "NEW_SELECTION", """ "FID" IN {0} """.format(str(tuple(good_dates_FIDs))))
-##    arcpy.CopyFeatures_management("tmp", "collar_data_date_subselection")
-##    collar_data = os.path.join(output_location, "collar_data_date_subselection") + ".shp"
-##    arcpy.Delete_management("tmp")
-
-
+# Subset original data based on date
+if start_date != "None":
+    arcpy.MakeFeatureLayer_management(collar_data, "tmp")
+    date_list = []
+    with arcpy.da.SearchCursor("tmp", ("FID", date_field)) as cursor:
+        for row in cursor:
+            date_list.append([row[0], datetime.datetime.strptime(row[1], "%Y/%m/%d %H:%M")])
+    good_dates_FIDs = [x[0] for x in date_list if x[1] > start_date and x[1] < end_date]
+    arcpy.SelectLayerByAttribute_management("tmp", "NEW_SELECTION", """ "FID" IN {0} """.format(str(tuple(good_dates_FIDs))))
+    arcpy.CopyFeatures_management("tmp", "collar_data_date_subselection")
+    collar_data = os.path.join(output_location, "collar_data_date_subselection") + ".shp"
+    arcpy.Delete_management("tmp")
 
 # Subset the data based on region ("program")
 if region_filter != "All":
